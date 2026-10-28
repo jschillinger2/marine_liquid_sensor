@@ -76,14 +76,14 @@ void setup()
       });
 
   // 3. Connect the evaluated level to a Signal K output
-  auto level_metadata = std::make_shared<SKMetadata>("ratio", "Fresh Water Tank Level");
+  auto level_metadata = std::make_shared<SKMetadata>("ratio", "Tank Level");
   auto level_sk_output = std::make_shared<SKOutput<float>>(
       kSignalKPath,     // Signal K path
       kWebUIConfigPath, // Web UI config path
       level_metadata);
 
   ConfigItem(level_sk_output)
-      ->set_title("Aft Water Tank Level SK Path")
+      ->set_title("Tank Level SK Path")
       ->set_sort_order(100);
 
   water_level_sensor->connect_to(level_sk_output);
