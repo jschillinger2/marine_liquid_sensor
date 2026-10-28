@@ -15,12 +15,12 @@ By default, the sensors are mapped to the following GPIO pins on the ESP32. You 
 
 | Tank Level | ESP32 GPIO Pin | Sensor Location |
 | :--- | :--- | :--- |
-| **80%** | `GPIO 33` | Top sensor |
-| **60%** | `GPIO 32` | Upper-middle sensor |
-| **40%** | `GPIO 35` | Lower-middle sensor |
-| **20%** | `GPIO 34` | Bottom sensor |
+| **80%** | `GPIO 26` | Top sensor |
+| **60%** | `GPIO 25` | Upper-middle sensor |
+| **40%** | `GPIO 33` | Lower-middle sensor |
+| **20%** | `GPIO 32` | Bottom sensor |
 
-*Note: Pins 34 and 35 are input-only pins on the ESP32 and do not have internal pull-up resistors. If you are using NPN open-collector sensors, you must add external pull-up resistors (e.g., 10kΩ to 3.3V) to these specific pins.*
+*Note: Some pins are input-only pins on the ESP32 and do not have internal pull-up resistors. If you are using NPN open-collector sensors, you must add external pull-up resistors (e.g., 10kΩ to 3.3V) to these specific pins.*
 
 ### ⚠️ Sensor Voltage Warning
 The DJLK-A6 sensors typically operate at 5V - 24V. **The ESP32 logic pins are NOT 5V tolerant (Max 3.3V).**

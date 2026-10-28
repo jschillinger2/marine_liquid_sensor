@@ -49,27 +49,39 @@ void setup()
   sensesp_app = builder->get_app();
 
   // 2. Create a RepeatSensor that evaluates the highest active level every 1000ms
-  // Die Pins für die Wasserstands-Sensoren konfigurieren
   pinMode(kLevelPin20, INPUT_PULLUP);
   pinMode(kLevelPin40, INPUT_PULLUP);
   pinMode(kLevelPin60, INPUT_PULLUP);
   pinMode(kLevelPin80, INPUT_PULLUP);
+
   const unsigned int kLevelReadInterval = 1000;
   auto water_level_sensor = std::make_shared<RepeatSensor<float>>(
       kLevelReadInterval,
       []() -> float
       {
-        // Check from highest level to lowest. First active sensor returns its value.
         if (digitalRead(kLevelPin80) == kSensorActiveState)
+        {
+          debugD("Sensor 80%% active (Pin %d is LOW)", kLevelPin80);
           return 0.8f;
+        }
         if (digitalRead(kLevelPin60) == kSensorActiveState)
+        {
+          debugD("Sensor 60%% active (Pin %d is LOW)", kLevelPin60);
           return 0.6f;
+        }
         if (digitalRead(kLevelPin40) == kSensorActiveState)
+        {
+          debugD("Sensor 40%% active (Pin %d is LOW)", kLevelPin40);
           return 0.4f;
+        }
         if (digitalRead(kLevelPin20) == kSensorActiveState)
+        {
+          debugD("Sensor 20%% active (Pin %d is LOW)", kLevelPin20);
           return 0.2f;
+        }
 
         // If no sensors are active, the tank is below 20% (or empty)
+        debugD("No sensors active. Tank is < 20%% (or empty).");
         return 0.0f;
       });
 

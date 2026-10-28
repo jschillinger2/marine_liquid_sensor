@@ -16,10 +16,10 @@ constexpr const uint16_t kSKServerPort = 3000;     // usual SK port
 
 /************* Tank Level Sensors *************/
 // Define the GPIO pins for each level sensor
-constexpr const uint8_t kLevelPin20 = 34;
-constexpr const uint8_t kLevelPin40 = 35;
-constexpr const uint8_t kLevelPin60 = 32;
-constexpr const uint8_t kLevelPin80 = 33;
+constexpr const uint8_t kLevelPin20 = 32;
+constexpr const uint8_t kLevelPin40 = 33;
+constexpr const uint8_t kLevelPin60 = 25;
+constexpr const uint8_t kLevelPin80 = 26;
 
 // Set to LOW if your DJLK-A6 is NPN (pulls to ground when water detected).
 // Set to HIGH if your DJLK-A6 is PNP (outputs voltage when water detected).
