@@ -1,38 +1,62 @@
-# SensESP Project Template
+# SensESP Fresh Water Tank Level Sensor
 
-This repository provides a template for [SensESP](https://github.com/SignalK/SensESP/) projects.
-Fork, clone or download the repository and try building and uploading the project to an ESP32 device.
-You should immediately see output on the serial monitor! Similarly, you should be able to connect to
-the WiFi access point with the same name as the device. The password is `thisisfine`.
+This project uses an ESP32 microcontroller and SensESP to monitor a fresh water tank's level using four discrete digital liquid level sensors (DJLK-A6). The highest active sensor determines the tank's fill percentage (20%, 40%, 60%, 80%), and the data is seamlessly published to a Signal K server on your boat.
 
-To customize the template for your own purposes, edit the `src/main.cpp` and `platformio.ini` files.
+## Overview
+- **Framework:** [SensESP](https://github.com/SignalK/SensESP) (ESP-IDF / Arduino)
+- **Hardware:** ESP32 Development Board (ESP-32S / NodeMCU-32S)
+- **Sensors:** 4x DJLK-A6 non-contact digital liquid level sensors
+- **Output:** Signal K standard tank ratio (`0.0` to `0.8`)
 
-Comprehensive documentation for SensESP, including how to get started with your own project, is available at the [SensESP documentation site](https://signalk.org/SensESP/).
+## Hardware & Wiring
 
-## Which environment to build
+### Pin Configuration
+By default, the sensors are mapped to the following GPIO pins on the ESP32. You can change these in `app_config.h`.
 
-`platformio.ini` defines two kinds of build environments for each board:
+| Tank Level | ESP32 GPIO Pin | Sensor Location |
+| :--- | :--- | :--- |
+| **80%** | `GPIO 33` | Top sensor |
+| **60%** | `GPIO 32` | Upper-middle sensor |
+| **40%** | `GPIO 35` | Lower-middle sensor |
+| **20%** | `GPIO 34` | Bottom sensor |
 
-| Board | Flash this (ESP-IDF from source) | Compile check only (precompiled Arduino) |
-|-------|----------------------------------|------------------------------------------|
-| Generic ESP32 | `esp32dev_espidf` | `pioarduino_esp32` |
-| Generic ESP32-C3 | `esp32c3_espidf` | `pioarduino_esp32c3` |
-| SH-ESP32 | `shesp32_espidf` | `shesp32` |
-| HALMET | `halmet_espidf` | `halmet` |
-| HALSER | `halser_espidf` | `halser` |
+*Note: Pins 34 and 35 are input-only pins on the ESP32 and do not have internal pull-up resistors. If you are using NPN open-collector sensors, you must add external pull-up resistors (e.g., 10kΩ to 3.3V) to these specific pins.*
 
-The default environment is `esp32dev_espidf`; change `default_envs` in `platformio.ini` to match your board, or pass `-e <env>` to `pio run`.
+### ⚠️ Sensor Voltage Warning
+The DJLK-A6 sensors typically operate at 5V - 24V. **The ESP32 logic pins are NOT 5V tolerant (Max 3.3V).**
+* **If using NPN (Active LOW) sensors:** The sensor pulls the signal to Ground. Use pull-up resistors to 3.3V. This is safe for the ESP32.
+* **If using PNP (Active HIGH) sensors:** The sensor outputs its supply voltage (5V+) when triggered. **Do not connect this directly to the ESP32.** You must use a voltage divider or an optocoupler to step the signal down to 3.3V.
 
-**Flash a `<board>_espidf` environment on any device that talks to a Signal K server over TLS (`https://`, `wss://`).** These environments build ESP-IDF from source, which makes `sdkconfig.defaults` authoritative and enables the dynamic mbedTLS buffers a TLS connection needs to fit in the ESP32's memory. The `esp_websocket_client` component for these environments is declared in `src/idf_component.yml` and pinned in `dependencies.lock`.
+## Software Configuration
 
-The plain Arduino environments use precompiled libraries that ignore `sdkconfig.defaults`. They build in a fraction of the time and are fine for compile checks and for servers on plain HTTP, but do not flash them onto a device that connects to a TLS server. The symptom is easy to mistake for a network fault: the device boots, joins WiFi, and Signal K stays Disconnected, with `mbedtls_ssl_setup` failing with `-0x7F00` in the log.
+All user-configurable properties are located in `app_config.h`. 
 
-`arduino_esp32` and `arduino_esp32c3` use the official PlatformIO `espressif32` platform (Arduino Core 2.x). They cannot build the ESP-IDF environments or the TLS support at all and exist only for users who cannot use the pioarduino platform.
+1. **Network Credentials:** Update `kWifiSSID` and `kWifiPassword`.
+2. **Signal K Server:** Set `kSKServerIP` to your server's IP (e.g., `192.168.31.61`). Leave it empty (`""`) to enable mDNS auto-discovery.
+3. **Sensor Type:** Set `kSensorActiveState` to `LOW` for NPN sensors or `HIGH` for PNP sensors.
+4. **Signal K Path:** The default output path is `tanks.freshWater.aft.currentLevel`.
 
-Things to know about the `<board>_espidf` environments:
+## Building and Flashing (PlatformIO)
 
-- **The first build downloads ESP-IDF** (several hundred megabytes) and compiles it from source, which takes several minutes. Later builds only recompile what changed.
-- **On Windows, keep the project in a short path without spaces** (for example `C:\p\my-project`). ESP-IDF builds fail on long or space-containing paths, and the first build takes 10 to 20 minutes.
-- **A device running an Arduino build needs one USB flash** before it can take an ESP-IDF build over the air. Flashing the ESP-IDF build over OTA onto an Arduino-built device reports success but the device falls back to the old application.
-- Every environment builds for 4 MB of flash with the `min_spiffs.csv` partition table, HALMET included. A HALMET flashed from an earlier version of this template used the 8 MB `default_8MB.csv` table; the first flash of the new layout moves the settings partition, so the device loses its saved WiFi and Signal K settings once and needs to be set up again through its web UI. For an 8 MB layout, see [HALMET-example-firmware](https://github.com/hatlabs/HALMET-example-firmware), which carries a matching `sdkconfig.defaults`.
-- The build generates `sdkconfig.<env>` files and a `managed_components/` directory; both are ignored by git. `sdkconfig.defaults` (shared) and `sdkconfig.defaults.esp32c3` (appended automatically for the C3) are the tracked configuration. Once a `sdkconfig.<env>` file exists in the project root, its values override `sdkconfig.defaults` on later builds, and it survives `pio run -t fullclean`. After changing `sdkconfig.defaults`, delete every `sdkconfig.<env>` file so the next build regenerates them. After changing `sdkconfig.defaults.esp32c3`, delete only the C3 environment files (for example `sdkconfig.esp32c3_espidf`).
+This project is built using PlatformIO. Because of the ESP-IDF backend, ensure your `platformio.ini` environment is set to `esp32dev_espidf`.
+
+1. Connect your ESP32 via USB.
+2. Build and upload the project using PlatformIO:
+   ```bash
+   pio run -e esp32dev_espidf -t upload
+   ```
+3. **Important Note for Flashing:** If the upload hangs at `Connecting........`, hold down the **BOOT** button on your ESP32 board for 1-2 seconds until the flashing process begins. *(Alternatively, solder a 10µF capacitor between the EN pin and GND to enable auto-reset).*
+
+## Signal K Integration
+
+Once connected to your network, the ESP32 will automatically send data to the configured Signal K server. 
+
+- **Data Format:** The tank level is sent as a ratio (`0.0` = Empty, `1.0` = Full). With 4 sensors, the possible outputs are `0.0`, `0.2`, `0.4`, `0.6`, and `0.8`.
+- **Web UI:** You can adjust the Signal K path directly from the SensESP Web UI by navigating to the ESP32's local IP address in your browser.
+
+## Troubleshooting
+
+- **"No Signal K server found in network when using mDNS service!"**
+  This warning is normal if you have hardcoded the Signal K Server IP in `app_config.h`. The system falls back to the manual IP, and this warning is suppressed in the code.
+- **Always reading 80% (or getting erratic readings):**
+  Check your sensor active state (`kSensorActiveState`). If you are using NPN sensors on pins 34/35 without external pull-up resistors, the pins will "float" and cause false readings. 
