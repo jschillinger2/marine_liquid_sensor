@@ -24,8 +24,8 @@ By default, the sensors are mapped to the following GPIO pins on the ESP32. You 
 
 ### ⚠️ Sensor Voltage Warning
 The DJLK-A6 sensors typically operate at 5V - 24V. **The ESP32 logic pins are NOT 5V tolerant (Max 3.3V).**
-* **If using NPN (Active LOW) sensors:** The sensor pulls the signal to Ground. Use pull-up resistors to 3.3V. This is safe for the ESP32.
-* **If using PNP (Active HIGH) sensors:** The sensor outputs its supply voltage (5V+) when triggered. **Do not connect this directly to the ESP32.** You must use a voltage divider or an optocoupler to step the signal down to 3.3V.
+* **If using NPN (Active HIGH) sensors:** The sensor pulls the signal to Ground. Use pull-up resistors to 3.3V. This is safe for the ESP32.
+* **If using PNP (Active LOW) sensors:** The sensor outputs its supply voltage (5V+) when triggered. **Do not connect this directly to the ESP32.** You must use a voltage divider or an optocoupler to step the signal down to 3.3V.
 
 ## Software Configuration
 
