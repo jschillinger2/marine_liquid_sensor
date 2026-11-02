@@ -21,9 +21,9 @@ constexpr const uint8_t kLevelPin40 = 33;
 constexpr const uint8_t kLevelPin60 = 25;
 constexpr const uint8_t kLevelPin80 = 26;
 
-// Set to LOW if your DJLK-A6 is NPN (pulls to ground when water detected).
-// Set to HIGH if your DJLK-A6 is PNP (outputs voltage when water detected).
-constexpr const uint8_t kSensorActiveState = LOW;
+// Set to HIGH if your DJLK-A6 is NPN (pulls to ground when water detected).
+// Set to LOW if your DJLK-A6 is PNP (outputs voltage when water detected).
+constexpr const uint8_t kSensorActiveState = HIGH;
 
 constexpr const char* kSignalKPath = "tanks.freshWater.aft.currentLevel";
 constexpr const char* kWebUIConfigPath = "/Tanks/FreshWaterAft/Level";
